@@ -25,7 +25,7 @@ async def root():
 #
 
 
-@app.post("/")
+@app.post("/ttv_callback")
 async def root(request: Request, twitch_eventsub_message_type: Union[str, None] = Header(default=None), data=Body()):
     print(data)
 
