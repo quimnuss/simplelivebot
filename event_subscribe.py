@@ -1,53 +1,35 @@
+import curlify
 import requests
-import os
-from dotenv import load_dotenv
-load_dotenv()
 
-TARGET_USERNAME = os.getenv('TWITCH_TARGET_USERNAME')
-WEBHOOK_URL = os.getenv('TWITCH_WEBHOOK_URL')
-CALLBACK_URL = os.getenv('TWITCH_CALLBACK_URL')
-APP_ID = os.getenv('TWITCH_APP_ID')
-APP_SECRET = os.getenv('TWITCH_APP_SECRET')
-TWITCH_CLIENTID = os.getenv("TWITCH_CLIENTID")
+from services.twitch import Twitch
+from config.config import *
 
-# TODO get channel id from target_username
-# meanwhile, here: https://www.streamweasels.com/tools/convert-twitch-username-to-user-id/
-TWITCH_CHANNEL_ID = os.getenv('TWITCH_CHANNEL_ID')
+twitch = Twitch(app_id=APP_ID, app_secret=APP_SECRET,
+                callback_url=CALLBACK_URL)
+channel_id = twitch.get_channel_id_from_username(username=TWITCH_USERNAME)
+
+# TODO use list of usernames instead of channels ids and save them
+# base code to channel ids not usernames which keep changing
+assert channel_id == TWITCH_CHANNEL_ID
+
+esubtype = 'channel.follow'
+
+try:
+    response = twitch.event_subscribe(
+        esubtype=esubtype, channel_id=TWITCH_CHANNEL_ID)
+    print(f"Satus {response.status_code}. Body: {response.json()}")
+except requests.HTTPError as e:
+    print(f"Error request: {e.request}")
+    curl_request = curlify.to_curl(e.request)
+    print(f"Curl version: {curl_request}")
+except Exception as e:
+    print(
+        f"Error subscribing to {esubtype} response code: {e}")
+
+    raise e
 
 
-def get_token():
-    params = {'client_id': APP_ID, 'client_secret': APP_SECRET,
-              'grant_type': 'client_credentials'}
-    response = requests.post(
-        url='https://id.twitch.tv/oauth2/token', data=params)
-    token = response.json()['access_token']
-    return token
-
-
-token = get_token()
-
-headers = {
-    'Client-Id': APP_ID,
-    'Authorization': f'Bearer {token}'
-}
-
-data = {
-    'client_id': APP_ID,
-    "type": "channel.follow",
-    "version": "1",
-    "condition": {"broadcaster_user_id": TWITCH_CHANNEL_ID},
-    "transport": {"method": "webhook", "callback": CALLBACK_URL, "secret": APP_SECRET}
-}
-
-sub_url = 'https://api.twitch.tv/helix/eventsub/subscriptions'
-
-response = requests.post(sub_url, headers=headers, json=data)
-
-print(f"response code: {response.status_code}")
-print(f"Body: {response.json()}")
-
-# import curlify
-# import ipdb
 # c = curlify.to_curl(response.request)
 # print(c)
+# import ipdb
 # ipdb.set_trace()
