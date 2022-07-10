@@ -24,6 +24,40 @@ class Subscription(BaseModel):
     cost: int
 
 
+class TTVEvent(BaseModel):
+    user_id: int
+    user_login: str
+    user_name: str
+    broadcaster_user_id: int
+    broadcaster_user_login: str
+    broadcaster_user_name: str
+
+
+class TTVEventFollow(TTVEvent):
+    followed_at: datetime.datetime
+
+
+class TTVEventLive(TTVEvent):
+    type: str
+    started_at: datetime.datetime
+
+
+class SubscriptionPayloadBase(BaseModel):
+    subscription: Subscription
+
+
+class SubscriptionTTVEventArbitraryPayload(SubscriptionPayloadBase):
+    event: Dict[str, str]
+
+
+class SubscriptionTTVEventPayload(SubscriptionPayloadBase):
+    event: TTVEvent
+
+
+class SubscriptionTTVEventFollowPayload(SubscriptionPayloadBase):
+    event: TTVEventFollow
+
+
 class TtvChallenge(BaseModel):
     subscription: Subscription
     challenge: str

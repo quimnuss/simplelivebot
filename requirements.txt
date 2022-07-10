@@ -1,3 +1,4 @@
+typer
 discord
 python-dotenv
 curlify
