@@ -1,7 +1,9 @@
+import hmac
 import logging
+
 import asyncio
 
-from fastapi import FastAPI, Body, Header, Request
+from fastapi import FastAPI, Body, Header, Request, Response, HTTPException, status
 from fastapi.responses import PlainTextResponse
 from typing import Union
 from .schemas import (
@@ -10,8 +12,9 @@ from .schemas import (
 
 from services.discord import bot, notify
 
-from config.config import DISCORD_TOKEN
+from config.config import DISCORD_TOKEN, APP_SECRET
 
+HMAC_PREFIX = 'sha256='
 
 app = FastAPI()
 
@@ -45,10 +48,36 @@ async def root():
 #
 
 
+def verify_message(id, timestamp, signature, body):
+
+    message = id.encode() + timestamp.encode() + body
+
+    hmac_signature = HMAC_PREFIX + \
+        hmac.new(APP_SECRET.encode(), message, digestmod='sha256').hexdigest()
+
+    return hmac.compare_digest(hmac_signature, signature)
+
+
 @app.post("/ttv_callback")
 async def root(request: Request, twitch_eventsub_message_type: Union[str, None] = Header(default=None), data=Body()):
     logging.info("We got a sub event!")
     logging.info(f'h: {request.headers}\nb:{data}')
+
+    twitch_message_id = request.headers['Twitch-Eventsub-Message-Id']
+    twitch_message_timestamp = request.headers['Twitch-Eventsub-Message-Timestamp']
+    twitch_message_signature = request.headers['Twitch-Eventsub-Message-Signature']
+
+    body_str = await request.body()
+    is_verified = verify_message(
+        twitch_message_id, twitch_message_timestamp, twitch_message_signature, body_str)
+
+    if not is_verified:
+        logging.warning(
+            f"Message {request.headers['twitch-eventsub-message-id']} did not pass the hmac verification")
+        return HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Signature mismatch"
+        )
 
     if twitch_eventsub_message_type == 'webhook_callback_verification':
         ttv_challenge = TtvChallenge(**data)
@@ -65,8 +94,7 @@ async def root(request: Request, twitch_eventsub_message_type: Union[str, None] 
             msg = f'{live_event.broadcaster_user_name} comença el directe!'
             await notify(msg)
 
-
-    return {"message": "Hello World"}
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
 # @app.post("/")
