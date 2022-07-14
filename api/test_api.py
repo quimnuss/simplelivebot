@@ -1,5 +1,4 @@
 import unittest
-import unittest
 from api.api import verify_message
 
 

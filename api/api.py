@@ -1,4 +1,3 @@
-import hmac
 import logging
 
 import asyncio
@@ -12,17 +11,11 @@ from .schemas import (
 
 from services.discord import bot, notify
 
-from config.config import DISCORD_TOKEN, APP_SECRET
+from config.config import DISCORD_TOKEN
 
-HMAC_PREFIX = 'sha256='
+from api.utils import verify_message
 
 app = FastAPI()
-
-
-def challenge_process():
-    # TODO test that the challenge is legit
-    # https://dev.twitch.tv/docs/eventsub/handling-webhook-events/#verifying-the-event-message
-    pass
 
 
 # From
@@ -46,16 +39,6 @@ async def root():
 # https://stackoverflow.com/questions/62282100/fastapi-redirectresponse-custom-headers
 # e.g. https://github.com/tiangolo/fastapi/issues/199
 #
-
-
-def verify_message(id, timestamp, signature, body):
-
-    message = id.encode() + timestamp.encode() + body
-
-    hmac_signature = HMAC_PREFIX + \
-        hmac.new(APP_SECRET.encode(), message, digestmod='sha256').hexdigest()
-
-    return hmac.compare_digest(hmac_signature, signature)
 
 
 @app.post("/ttv_callback")
@@ -95,10 +78,3 @@ async def root(request: Request, twitch_eventsub_message_type: Union[str, None] 
             await notify(msg)
 
     return Response(status_code=status.HTTP_204_NO_CONTENT)
-
-
-# @app.post("/")
-# async def root(subchallenge: TtvChallenge, request: Request):
-#     # we have to filter by header :(
-#     # we can't use proper pydantic validation
-#     return {subchallenge.challenge}
