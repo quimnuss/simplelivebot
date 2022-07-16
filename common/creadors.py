@@ -24,7 +24,10 @@ class CreadorsDb():
             con.execute(create_query)
 
     def clear_db(self):
-        os.remove(self.dbfile)
+        if os.path.exists(self.dbfile):
+            os.remove(self.dbfile)
+        else:
+            logging.error(f"Database file {self.dbfile} does not exist")
 
     def add_streamer(self, twitch_username, twitch_user_uid, discord_username, discord_user_uid, discord_channel_uid):
         insert_query = f'''
