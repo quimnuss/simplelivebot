@@ -4,12 +4,13 @@ import random
 import asyncio
 import logging
 from typing import List
+from urllib import request
 import discord
 from discord.ext import commands
 from common.creadors import CreadorsDb
 from config.config import DISCORD_GUILD, DBFILE, APP_ID, APP_SECRET, TWITCH_CALLBACK_URL
 
-from twitch import Twitch
+from services.twitch import Twitch
 
 from main import subscribe, unsubscribe
 
@@ -69,6 +70,22 @@ async def list_streamers(ctx):
     await ctx.send(msg)
 
 
+@bot.command(name='twitch', help='lists the streamers with notifies')
+@in_bot_channel
+async def list_streamers(ctx):
+
+    streamers_in_db = streamers_db.get_streamers_by_discord_channel(
+        ctx.guild.id)
+
+    streamer_msg = [
+        f'{discord_username} : {twitch_username}' for discord_username, twitch_username in streamers_in_db]
+
+    streamers_msg = '\n'.join(streamer_msg)
+
+    msg = f'Streamers:\n{streamers_msg}'
+    await ctx.send(msg)
+
+
 @bot.command(name='failstreamers', help='lists the streamers without linked twitch')
 @in_bot_channel
 async def list_incomplete_streamers(ctx):
@@ -92,7 +109,7 @@ async def list_incomplete_streamers(ctx):
 # @commands.has_role("Moderadors")
 @commands.has_permissions(administrator=True)
 @in_bot_channel
-async def add_streamers(ctx, user: discord.Member, twitch_username: str):
+async def add_streamers(ctx, twitch_username: str, user: discord.Member = None):
     twitch = Twitch(app_id=APP_ID, app_secret=APP_SECRET,
                     callback_url=TWITCH_CALLBACK_URL)
 
@@ -103,15 +120,34 @@ async def add_streamers(ctx, user: discord.Member, twitch_username: str):
         logging.exception(e)
         logging.error("Continuing with insertion without twitch_id")
 
-    streamers_db.add_streamer(
-        twitch_username, twitch_user_uid, user.name, user.id, ctx.guild.id)
-    streamers_db[user.id] = twitch_username
-
-    msg = f'Added {user.display_name} -> https://www.twitch.tv/{twitch_username} to db'
+    if user:
+        streamers_db.add_streamer(
+            twitch_username, twitch_user_uid, user.name, user.id, ctx.guild.id)
+        msg = f'Added {user.display_name} -> https://www.twitch.tv/{twitch_username} to db'
+    else:
+        streamers_db.add_streamer(
+            twitch_username, twitch_user_uid, discord_username=None, discord_user_uid=None, discord_channel_uid=ctx.guild.id)
+        msg = f'Added https://www.twitch.tv/{twitch_username} to db'
 
     subscribe(twitch_username=twitch_username)
 
     await ctx.send(msg)
+
+
+@bot.command(name='removestreamer', help='remove a streamer for live notifies. e.g. !removestreamer clicli')
+# @commands.has_role("Moderadors")
+@commands.has_permissions(administrator=True)
+@in_bot_channel
+async def remove_streamer(ctx, twitch_username: str, user: discord.Member = None):
+
+    response = unsubscribe(twitch_username=twitch_username)
+    if response.ok:
+        streamers_db.remove_streamer_by_twitch_username(twitch_username, ctx.guild.id)
+        msg = f'Removed https://www.twitch.tv/{twitch_username} from db'
+
+    await ctx.send(msg)
+
+
 
 
 @bot.command(name='99', help='Responds with a random quote from Brooklyn 99')

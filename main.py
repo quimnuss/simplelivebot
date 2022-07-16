@@ -9,7 +9,7 @@ app = typer.Typer()
 
 
 @app.command()
-def subscribe(twitch_username: str = TWITCH_USERNAME, esubtype: str = 'channel.follow', channel_id: int = None):
+def subscribe(twitch_username: str = TWITCH_USERNAME, esubtype: str = 'stream.online', channel_id: int = None):
     twitch = Twitch(app_id=APP_ID, app_secret=APP_SECRET,
                     callback_url=TWITCH_CALLBACK_URL)
 

@@ -40,6 +40,14 @@ class CreadorsDb():
             con.execute(insert_query, (twitch_username,
                         twitch_user_uid, discord_username, discord_user_uid, discord_channel_uid))
 
+    def remove_streamer_by_twitch_username(self, twitch_username, discord_channel_uid):
+        query = f'''
+        delete from streamers where twitch_username = ? and discord_channel_uid = ?;
+        '''
+        with SQLite(self.dbfile) as con:
+            con.execute(query, (twitch_username, discord_channel_uid))
+
+
     def get_streamers_by_discord_user(self, disc_usernames):
         if len(disc_usernames) > 900:
             logging.error("Too many usernames, select will fail.")

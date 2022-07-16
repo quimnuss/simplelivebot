@@ -70,11 +70,11 @@ async def root(request: Request, twitch_eventsub_message_type: Union[str, None] 
         esubwevent = SubscriptionTTVEventArbitraryPayload(**data)
         if esubwevent.subscription.type == 'channel.follow':
             follow_event = TTVEventFollow(**esubwevent.event)
-            msg = f'{follow_event.user_name} ha començat a seguir {follow_event.broadcaster_user_name}!'
+            msg = f'https://www.twitch.tv/{follow_event.user_name} ha començat a seguir https://www.twitch.tv/{follow_event.broadcaster_user_name}!'
             await notify(msg)
         elif esubwevent.subscription.type == 'stream.online':
             live_event = TTVEventLive(**esubwevent.event)
-            msg = f'{live_event.broadcaster_user_name} comença el directe!'
+            msg = f'https://www.twitch.tv/{live_event.broadcaster_user_name} comença el directe!'
             await notify(msg)
 
     return Response(status_code=status.HTTP_204_NO_CONTENT)

@@ -25,19 +25,20 @@ class Subscription(BaseModel):
 
 
 class TTVEvent(BaseModel):
-    user_id: int
-    user_login: str
-    user_name: str
     broadcaster_user_id: int
     broadcaster_user_login: str
     broadcaster_user_name: str
 
 
 class TTVEventFollow(TTVEvent):
+    user_id: int
+    user_login: str
+    user_name: str
     followed_at: datetime.datetime
 
 
 class TTVEventLive(TTVEvent):
+    id: int
     type: str
     started_at: datetime.datetime
 
