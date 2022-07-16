@@ -13,7 +13,14 @@ class TestCreadorsDb(unittest.TestCase):
 
     @classmethod
     def tearDownClass(cls):
-        os.remove(cls.dbfile)
+        if os.path.exists(cls.dbfile):
+            os.remove(cls.dbfile)
+
+    def setUp(self):
+        pass
+
+    def tearDown(self):
+        os.remove(self.dbfile)
 
     def test__add_streamer(self):
         creadorsdb = CreadorsDb(self.dbfile)
@@ -44,3 +51,19 @@ class TestCreadorsDb(unittest.TestCase):
                      f'{name}_ttv') for name in names]
 
         self.assertListEqual(result, expected)
+
+    def test__list_streamers__valuetype(self):
+        creadorsdb = CreadorsDb(self.dbfile)
+        fake = Faker()
+
+        names = [fake.first_name(), fake.first_name()]
+        [creadorsdb.add_streamer(
+            f'{name}_ttv', fake.random_int(), f'{name}_disc', fake.random_int(), 56789) for name in names]
+
+        result = creadorsdb.get_streamers_by_discord_guild(56789)
+
+        expected = [(f'{name}_disc',
+                     f'{name}_ttv') for name in names]
+
+        self.assertListEqual(result, expected)
+        query = '\n        select discord_username, twitch_username from streamers where discord_channel_uid = ?;\n        '

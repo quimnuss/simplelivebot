@@ -38,6 +38,8 @@ def in_bot_channel(func):
 
 # TODO assume multiple guilds
 # https://stackoverflow.com/questions/64841919/find-guild-id-in-on-ready-discord-py
+
+
 @bot.event
 async def on_ready():
     print(f'{bot.user.name} has connected to Discord!')
@@ -73,9 +75,9 @@ async def list_streamers(ctx):
 
 @bot.command(name='twitch', help='lists the streamers with notifies')
 @in_bot_channel
-async def list_streamers(ctx):
+async def list_all_streamers(ctx):
 
-    streamers_in_db = streamers_db.get_streamers_by_discord_channel(
+    streamers_in_db = streamers_db.get_streamers_by_discord_guild(
         ctx.guild.id)
 
     streamer_msg = [
@@ -143,12 +145,11 @@ async def remove_streamer(ctx, twitch_username: str, user: discord.Member = None
 
     response = unsubscribe(twitch_username=twitch_username)
     if response.ok:
-        streamers_db.remove_streamer_by_twitch_username(twitch_username, ctx.guild.id)
+        streamers_db.remove_streamer_by_twitch_username(
+            twitch_username, ctx.guild.id)
         msg = f'Removed https://www.twitch.tv/{twitch_username} from db'
 
     await ctx.send(msg)
-
-
 
 
 @bot.command(name='99', help='Responds with a random quote from Brooklyn 99')

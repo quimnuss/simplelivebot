@@ -58,17 +58,17 @@ class CreadorsDb():
         with SQLite(self.dbfile) as con:
             return con.execute(query, disc_usernames).fetchall()
 
-    def get_streamers_by_discord_channel(self, discord_channel_uid):
+    def get_streamers_by_discord_guild(self, discord_channel_uid):
         query = f'''
-        select discord_username, twitch_username from streamers where discord_channel_uid == ?;
+        select discord_username, twitch_username from streamers where discord_channel_uid = ?;
         '''
         with SQLite(self.dbfile) as con:
-            return con.execute(query, discord_channel_uid).fetchall()
+            return con.execute(query, (discord_channel_uid,)).fetchall()
 
 
     def get_channel_streamers_without_twitch_username(self, discord_channel_uid):
         query = f'''
-        select discord_username from streamers where discord_channel_uid == ? and twitch_username is null;
+        select discord_username from streamers where discord_channel_uid = ? and twitch_username is null;
         '''
         with SQLite(self.dbfile) as con:
-            return con.execute(query, discord_channel_uid).fetchall()
+            return con.execute(query, (discord_channel_uid,)).fetchall()
