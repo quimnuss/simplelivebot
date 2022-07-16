@@ -42,7 +42,7 @@ async def root():
 
 
 @app.post("/ttv_callback")
-async def root(request: Request, twitch_eventsub_message_type: Union[str, None] = Header(default=None), data=Body()):
+async def twitch_callback(request: Request, twitch_eventsub_message_type: Union[str, None] = Header(default=None), data=Body()):
     logging.info("We got a sub event!")
     logging.info(f'h: {request.headers}\nb:{data}')
 
