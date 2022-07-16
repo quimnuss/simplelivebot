@@ -12,7 +12,7 @@ from config.config import DISCORD_GUILD, DBFILE, APP_ID, APP_SECRET, TWITCH_CALL
 
 from services.twitch import Twitch
 
-from main import subscribe, unsubscribe
+from main import subscribe, unsubscribe, unsubscribe_all
 
 role_name = 'streamer'
 bot_channel = 'bot-control'
@@ -148,6 +148,21 @@ async def remove_streamer(ctx, twitch_username: str, user: discord.Member = None
         streamers_db.remove_streamer_by_twitch_username(
             twitch_username, ctx.guild.id)
         msg = f'Removed https://www.twitch.tv/{twitch_username} from db'
+
+    await ctx.send(msg)
+
+
+@bot.command(name='cleardb', help='clear streamer db. e.g. !cleardb')
+# @commands.has_role("Moderadors")
+@commands.has_permissions(administrator=True)
+@in_bot_channel
+async def clear(ctx):
+
+    unsubscribe_all()
+
+    streamers_db.clear_db()
+
+    msg = f'db cleared'
 
     await ctx.send(msg)
 
