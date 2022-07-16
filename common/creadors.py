@@ -1,3 +1,4 @@
+import logging
 from common.db import SQLite
 
 from config.config import DBFILE
@@ -10,27 +11,56 @@ class CreadorsDb():
         create_query = f'''
         create table if not exists streamers (
             streamer_id integer primary key autoincrement,
-            twitch_username string not null,
-            twitch_user_id integer unique not null,
-            discord_username string not null,
-            discord_user_id integer not null,
+            twitch_username string,
+            twitch_user_uid integer unique,
+            discord_username string,
+            discord_user_uid integer unique,
+            discord_channel_uid integer,
             create_date integer default current_timestamp,
             update_date integer default current_timestamp
         )'''
         with SQLite(self.dbfile) as con:
             con.execute(create_query)
 
-    def add_streamer(self, twitch_username, twitch_user_id, discord_username, discord_user_id):
+    def add_streamer(self, twitch_username, twitch_user_uid, discord_username, discord_user_uid, discord_channel_uid):
         insert_query = f'''
-        insert into streamers(twitch_username, twitch_user_id, discord_username, discord_user_id) values(?,?,?,?)
-        on conflict(twitch_user_id) do update set
+        insert into
+        streamers(twitch_username, twitch_user_uid, discord_username, discord_user_uid, discord_channel_uid)
+        values(?,?,?,?,?)
+        on conflict(twitch_user_uid) do update set
          twitch_username=excluded.twitch_username,
-         twitch_user_id=excluded.twitch_user_id,
+         twitch_user_uid=excluded.twitch_user_uid,
          discord_username=excluded.discord_username,
-         discord_user_id=excluded.discord_user_id,
+         discord_user_uid=excluded.discord_user_uid,
+         discord_channel_uid=excluded.discord_channel_uid,
          update_date=excluded.update_date
         ;
         '''
         with SQLite(self.dbfile) as con:
             con.execute(insert_query, (twitch_username,
-                        twitch_user_id, discord_username, discord_user_id))
+                        twitch_user_uid, discord_username, discord_user_uid, discord_channel_uid))
+
+    def get_streamers_by_discord_user(self, disc_usernames):
+        if len(disc_usernames) > 900:
+            logging.error("Too many usernames, select will fail.")
+
+        query = f'''
+        select discord_username, twitch_username from streamers where discord_username in ({', '.join('?'*len(disc_usernames))});
+        '''
+        with SQLite(self.dbfile) as con:
+            return con.execute(query, disc_usernames).fetchall()
+
+    def get_streamers_by_discord_channel(self, discord_channel_uid):
+        query = f'''
+        select discord_username, twitch_username from streamers where discord_channel_uid == ?;
+        '''
+        with SQLite(self.dbfile) as con:
+            return con.execute(query, discord_channel_uid).fetchall()
+
+
+    def get_channel_streamers_without_twitch_username(self, discord_channel_uid):
+        query = f'''
+        select discord_username from streamers where discord_channel_uid == ? and twitch_username is null;
+        '''
+        with SQLite(self.dbfile) as con:
+            return con.execute(query, discord_channel_uid).fetchall()

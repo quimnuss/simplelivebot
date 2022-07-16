@@ -9,11 +9,12 @@ app = typer.Typer()
 
 
 @app.command()
-def subscribe(twitch_username: str = TWITCH_USERNAME, esubtype: str = 'channel.follow'):
+def subscribe(twitch_username: str = TWITCH_USERNAME, esubtype: str = 'channel.follow', channel_id: int = None):
     twitch = Twitch(app_id=APP_ID, app_secret=APP_SECRET,
                     callback_url=TWITCH_CALLBACK_URL)
 
-    channel_id = twitch.get_channel_id_from_username(username=twitch_username)
+    channel_id = channel_id or twitch.get_channel_id_from_username(
+        username=twitch_username)
 
     try:
         response = twitch.event_subscribe(
