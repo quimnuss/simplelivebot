@@ -27,3 +27,9 @@ $ uvicorn api.api:app
 And you can trigger events via the main.py script or via the discord commands if you add the bot to your server. At the moment the bot only listens to commands on the channel #bot-control
 
 # deploy to heroku
+
+*Notes for WSL2*
+
+https://dev.to/wrightdotclick/heroku-cli-on-wsl-26fp
+
+https://towardsdatascience.com/how-to-deploy-your-fastapi-app-on-heroku-for-free-8d4271a4ab9

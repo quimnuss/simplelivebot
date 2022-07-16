@@ -36,7 +36,8 @@ def in_bot_channel(func):
         await func(ctx, *args, **kwargs)
     return inner
 
-
+# TODO assume multiple guilds
+# https://stackoverflow.com/questions/64841919/find-guild-id-in-on-ready-discord-py
 @bot.event
 async def on_ready():
     print(f'{bot.user.name} has connected to Discord!')

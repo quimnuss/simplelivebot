@@ -6,7 +6,6 @@ logging.basicConfig(level=logging.INFO)
 load_dotenv()
 
 TARGET_USERNAME = os.getenv('TWITCH_TARGET_USERNAME')
-WEBHOOK_URL = os.getenv('TWITCH_WEBHOOK_URL')
 APP_ID = os.getenv('TWITCH_APP_ID')
 APP_SECRET = os.getenv('TWITCH_APP_SECRET')
 TWITCH_CLIENTID = os.getenv("TWITCH_CLIENTID")
