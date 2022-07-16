@@ -21,7 +21,9 @@ class CreadorsDb():
             update_date integer default current_timestamp
         )'''
         with SQLite(self.dbfile) as con:
-            con.execute(create_query)
+            result = con.execute(create_query)
+            logging.info(
+                f'Creation database result: {result} abs path: {os.path.abspath(self.dbfile)}')
 
     def clear_db(self):
         if os.path.exists(self.dbfile):
