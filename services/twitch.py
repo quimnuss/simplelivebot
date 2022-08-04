@@ -65,6 +65,23 @@ class Twitch:
         esublist = EventSubList(**response.json())
         return esublist
 
+    def get_subscribed_usernames(self):
+
+        esublist = self.get_event_subscriptions()
+
+        channel_ids = [
+            subscription.condition.broadcaster_user_id
+            for subscription in esublist.data
+        ]
+
+        if channel_ids:
+            ids_usernames = self.get_usernames_from_channel_ids(channel_ids)
+            usernames = list(ids_usernames.values())
+        else:
+            usernames = []
+
+        return usernames
+
     def delete_event_subscription(self, esub_id):
 
         response = requests.delete(

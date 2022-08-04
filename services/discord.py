@@ -52,16 +52,7 @@ async def list_all_streamers(ctx):
     twitch = Twitch(app_id=APP_ID, app_secret=APP_SECRET,
                     callback_url=TWITCH_CALLBACK_URL)
 
-    esublist = twitch.get_event_subscriptions()
-
-    channel_ids = [
-        subscription.condition.broadcaster_user_id
-        for subscription in esublist.data
-    ]
-
-    ids_usernames = twitch.get_usernames_from_channel_ids(channel_ids)
-
-    usernames = list(ids_usernames)
+    usernames = twitch.get_subscribed_usernames()
 
     streamers_msg = '\n'.join(usernames)
 
@@ -69,29 +60,36 @@ async def list_all_streamers(ctx):
     await ctx.send(msg)
 
 
-@bot.command(name='addstreamer', help='add a streamer for live notifies. e.g. !addstreamer @CatSZekely#1234 clicli')
+@bot.command(name='addstreamer', help='add a streamer for live notifies. e.g. !addstreamer clicli')
 # @commands.has_role("Moderadors")
 @commands.has_permissions(administrator=True)
 @in_bot_channel
-async def add_streamers(ctx, twitch_username: str, user: discord.Member = None):
+async def add_streamers(ctx, twitch_username: str):
     twitch = Twitch(app_id=APP_ID, app_secret=APP_SECRET,
                     callback_url=TWITCH_CALLBACK_URL)
 
-    try:
-        msg = twitch.subscribe(twitch_username=twitch_username)
-    except Exception as e:
-        logging.exception(e)
-        logging.error("Continuing with insertion without twitch_id")
-        msg = e
+    usernames = twitch.get_subscribed_usernames()
 
-    await ctx.msg(msg)
+    if twitch_username in usernames:
+        msg = f'{twitch_username} already has a subscription. Skipping!'
+    else:
+
+        try:
+            result = twitch.subscribe(twitch_username=twitch_username)
+            msg = f'Subscribed to https://twitch.tv/{twitch_username} live notifications'
+        except Exception as e:
+            logging.exception(e)
+            msg = f"Cancelling subscription since channel_id for {twitch_username} wasn't found. Exception: {e}"
+            logging.error(msg)
+
+    await ctx.send(msg)
 
 
 @bot.command(name='removestreamer', help='remove a streamer for live notifies. e.g. !removestreamer clicli')
 # @commands.has_role("Moderadors")
 @commands.has_permissions(administrator=True)
 @in_bot_channel
-async def remove_streamer(ctx, twitch_username: str, user: discord.Member = None):
+async def remove_streamer(ctx, twitch_username: str):
 
     twitch = Twitch(app_id=APP_ID, app_secret=APP_SECRET,
                     callback_url=TWITCH_CALLBACK_URL)
