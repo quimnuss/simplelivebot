@@ -1,6 +1,7 @@
 import curlify
 import requests
 import typer
+from typing import List
 
 from services.twitch import Twitch
 from config.config import *
@@ -13,50 +14,15 @@ def subscribe(twitch_username: str = TWITCH_USERNAME, esubtype: str = 'stream.on
     twitch = Twitch(app_id=APP_ID, app_secret=APP_SECRET,
                     callback_url=TWITCH_CALLBACK_URL)
 
-    channel_id = channel_id or twitch.get_channel_id_from_username(
-        username=twitch_username)
-
-    try:
-        response = twitch.event_subscribe(
-            esubtype=esubtype, channel_id=channel_id)
-        print(f"Status {response.status_code}. Body: {response.json()}")
-    except requests.HTTPError as e:
-        print(f"Error request: {e.request}")
-        curl_request = curlify.to_curl(e.request)
-        print(f"Curl version: {curl_request}")
-    except Exception as e:
-        print(
-            f"Error subscribing to {esubtype} response code: {e}")
-
-        raise e
+    twitch.subscribe(twitch_username=twitch_username,
+                     esubtype=esubtype, channel_id=channel_id)
 
 
 @app.command()
 def unsubscribe(twitch_username: str):
     twitch = Twitch(app_id=APP_ID, app_secret=APP_SECRET,
                     callback_url=TWITCH_CALLBACK_URL)
-
-    channel_id = twitch.get_channel_id_from_username(username=twitch_username)
-    channel_id = int(channel_id)
-
-    esublist = twitch.get_event_subscriptions()
-
-    # delete all event subscriptions
-    logging.info(esublist)
-    for esub in esublist.data:
-        logging.info(
-            f'channel_id {channel_id} : broadcaster_id {esub.condition.broadcaster_user_id}')
-
-        if esub.condition.broadcaster_user_id == channel_id:
-            response = twitch.delete_event_subscription(esub.id)
-            if response.status_code == 204:
-                logging.info(f'Deleted subscription {esub.id}')
-                return response
-            else:
-                response.raise_for_status()
-                logging.info(
-                    f'response: {response.status_code} {response.json()}')
-                return response
+    twitch.unsubscribe(twitch_username=twitch_username)
 
 
 @app.command()
@@ -74,13 +40,27 @@ def unsubscribe_all():
             logging.info(f'Deleted subscription {esub.id}')
 
 
-@app.command()
-def check_subscriptions():
+def get_subscriptions():
     twitch = Twitch(app_id=APP_ID, app_secret=APP_SECRET,
                     callback_url=TWITCH_CALLBACK_URL)
-    esublist = twitch.get_event_subscriptions()
+    return twitch.get_event_subscriptions()
+
+
+@app.command()
+def check_subscriptions():
+
+    esublist = get_subscriptions()
 
     logging.info(esublist)
+
+
+@app.command()
+def ids_to_username(ids: List[int]):
+
+    twitch = Twitch(app_id=APP_ID, app_secret=APP_SECRET,
+                    callback_url=TWITCH_CALLBACK_URL)
+    usernames = twitch.get_usernames_from_channel_ids(channel_ids=ids)
+    logging.info(usernames)
 
 
 if __name__ == '__main__':
