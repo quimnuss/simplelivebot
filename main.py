@@ -1,5 +1,3 @@
-import curlify
-import requests
 import typer
 from typing import List
 

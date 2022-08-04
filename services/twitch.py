@@ -1,5 +1,4 @@
 import logging
-from urllib.error import HTTPError
 import requests
 import curlify
 from typing import List
