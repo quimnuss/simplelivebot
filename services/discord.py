@@ -15,6 +15,8 @@ role_name = 'streamer'
 bot_channel = 'bot-control'
 bot_channel_id = None
 
+servers = ['Gaming.cat', 'The Chuckle']
+
 intents = discord.Intents.default()
 intents.members = True
 bot = commands.Bot(command_prefix='!', intents=intents)
@@ -30,9 +32,20 @@ def in_bot_channel(func):
         await func(ctx, *args, **kwargs)
     return inner
 
+
+def in_our_servers(func):
+    async def inner(ctx, *args, **kwargs):
+        if ctx.guild.name not in servers:
+            msg = f"Server {ctx.guild.name} is not an authorized server {servers}"
+            logging.warning(msg)
+            await ctx.send(msg)
+            return
+        await func(ctx, *args, **kwargs)
+    return inner
+
+
 # TODO assume multiple guilds
 # https://stackoverflow.com/questions/64841919/find-guild-id-in-on-ready-discord-py
-
 
 @bot.event
 async def on_ready():
@@ -64,7 +77,8 @@ async def list_all_streamers(ctx):
 # @commands.has_role("Moderadors")
 @commands.has_permissions(administrator=True)
 @in_bot_channel
-async def add_streamers(ctx, twitch_username: str):
+@in_our_servers
+async def add_streamers(ctx: commands.Context, twitch_username: str):
     twitch = Twitch(app_id=APP_ID, app_secret=APP_SECRET,
                     callback_url=TWITCH_CALLBACK_URL)
 
@@ -89,7 +103,9 @@ async def add_streamers(ctx, twitch_username: str):
 # @commands.has_role("Moderadors")
 @commands.has_permissions(administrator=True)
 @in_bot_channel
-async def remove_streamer(ctx, twitch_username: str):
+@in_our_servers
+async def remove_streamer(ctx: commands.Context, twitch_username: str):
+
 
     twitch = Twitch(app_id=APP_ID, app_secret=APP_SECRET,
                     callback_url=TWITCH_CALLBACK_URL)
@@ -107,6 +123,7 @@ async def remove_streamer(ctx, twitch_username: str):
 # @commands.has_role("Moderadors")
 @commands.has_permissions(administrator=True)
 @in_bot_channel
+@in_our_servers
 async def clear(ctx):
 
     unsubscribe_all()
