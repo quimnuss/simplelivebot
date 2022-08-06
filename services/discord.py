@@ -50,10 +50,11 @@ def in_our_servers(func):
 @bot.event
 async def on_ready():
     print(f'{bot.user.name} has connected to Discord!')
+    #TODO this only checks on one server!!
     channel: discord.TextChannel = discord.utils.get(
         bot.get_all_channels(), guild__name=DISCORD_GUILD, name='bot-control')
     if not channel:
-        return logging.error("The channel does not exist!")
+        return logging.error(f"The channel bot-control does not exist in {DISCORD_GUILD}!")
     global bot_channel_id
     bot_channel_id = channel.id
 
