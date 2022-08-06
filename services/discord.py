@@ -51,6 +51,19 @@ def in_our_servers(func):
 @bot.event
 async def on_ready():
     print(f'{bot.user.name} has connected to Discord!')
+    for guild in bot.guilds:
+        channel: discord.TextChannel = discord.utils.get(
+            guild.channels, name=bot_channels[0])
+        channel.send("I'm live!")
+
+
+@bot.command(name='kill', help='kills the bot')
+@commands.has_permissions(administrator=True)
+@in_bot_channel
+@in_our_servers
+async def quit(ctx):
+    await ctx.send("Shutting down the bot")
+    return await bot.logout()  # this just shuts down the bot.
 
 
 @bot.command(name='streamers', help='lists the streamers with notifies')
@@ -86,6 +99,8 @@ async def add_streamers(ctx: commands.Context, twitch_username: str):
         try:
             result = twitch.subscribe(twitch_username=twitch_username)
             msg = f'Subscribed to https://twitch.tv/{twitch_username} live notifications'
+            logging.info(msg)
+            logging.info(f'Result: {result}')
         except Exception as e:
             logging.exception(e)
             msg = f"Cancelling subscription since channel_id for {twitch_username} wasn't found. Exception: {e}"
@@ -100,7 +115,6 @@ async def add_streamers(ctx: commands.Context, twitch_username: str):
 @in_bot_channel
 @in_our_servers
 async def remove_streamer(ctx: commands.Context, twitch_username: str):
-
 
     twitch = Twitch(app_id=APP_ID, app_secret=APP_SECRET,
                     callback_url=TWITCH_CALLBACK_URL)
