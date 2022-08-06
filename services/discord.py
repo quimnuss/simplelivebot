@@ -54,7 +54,7 @@ async def on_ready():
     for guild in bot.guilds:
         channel: discord.TextChannel = discord.utils.get(
             guild.channels, name=bot_channels[0])
-        channel.send("I'm live!")
+        await channel.send("I'm live!")
 
 
 @bot.command(name='kill', help='kills the bot')
