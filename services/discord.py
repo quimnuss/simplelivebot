@@ -13,7 +13,7 @@ from main import unsubscribe_all
 
 role_name = 'streamer'
 bot_channels = ['bot-control']
-bot_channel_id = None
+bot_channel_ids = []
 
 servers = ['Gaming.cat', 'The Chuckle']
 
@@ -24,7 +24,6 @@ bot = commands.Bot(command_prefix='!', intents=intents)
 
 def in_bot_channel(func):
     async def inner(ctx, *args, **kwargs):
-        print(bot_channel_id)
         if ctx.channel.name not in bot_channels:
             msg = f"Wrong channel for commands. Got {ctx.channel.name}, expecting {bot_channels}"
             logging.warning(msg)
@@ -54,6 +53,7 @@ async def on_ready():
     for guild in bot.guilds:
         channel: discord.TextChannel = discord.utils.get(
             guild.channels, name=bot_channels[0])
+        bot_channel_ids.append(channel.id)
         await channel.send("I'm live!")
 
 
@@ -160,5 +160,6 @@ async def nine_nine(ctx):
 
 
 async def notify(msg):
-    channel = bot.get_channel(bot_channel_id)
-    await channel.send(msg)
+    for channel_id in bot_channel_ids:
+        channel = bot.get_channel(channel_id)
+        await channel.send(msg)
