@@ -5,14 +5,14 @@ from typing import List
 from urllib import request
 import discord
 from discord.ext import commands
-from config.config import DISCORD_GUILD, APP_ID, APP_SECRET, TWITCH_CALLBACK_URL
+from config.config import APP_ID, APP_SECRET, TWITCH_CALLBACK_URL
 
 from services.twitch import Twitch
 
 from main import unsubscribe_all
 
 role_name = 'streamer'
-bot_channel = 'bot-control'
+bot_channels = ['bot-control']
 bot_channel_id = None
 
 servers = ['Gaming.cat', 'The Chuckle']
@@ -25,9 +25,10 @@ bot = commands.Bot(command_prefix='!', intents=intents)
 def in_bot_channel(func):
     async def inner(ctx, *args, **kwargs):
         print(bot_channel_id)
-        if ctx.channel.id is not bot_channel_id:
-            logging.warning(
-                f"Wrong channel for commands. Expecting {bot_channel}")
+        if ctx.channel.name not in bot_channels:
+            msg = f"Wrong channel for commands. Got {ctx.channel.name}, expecting {bot_channels}"
+            logging.warning(msg)
+            await ctx.send(msg)
             return
         await func(ctx, *args, **kwargs)
     return inner
@@ -50,13 +51,6 @@ def in_our_servers(func):
 @bot.event
 async def on_ready():
     print(f'{bot.user.name} has connected to Discord!')
-    #TODO this only checks on one server!!
-    channel: discord.TextChannel = discord.utils.get(
-        bot.get_all_channels(), guild__name=DISCORD_GUILD, name='bot-control')
-    if not channel:
-        return logging.error(f"The channel bot-control does not exist in {DISCORD_GUILD}!")
-    global bot_channel_id
-    bot_channel_id = channel.id
 
 
 @bot.command(name='streamers', help='lists the streamers with notifies')
