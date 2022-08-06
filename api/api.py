@@ -3,7 +3,7 @@ import logging
 import asyncio
 
 from fastapi import FastAPI, Body, Header, Request, Response, HTTPException, status
-from fastapi.responses import PlainTextResponse
+from fastapi.responses import PlainTextResponse, RedirectResponse
 from typing import Union
 from .schemas import (
     Subscription, TtvChallenge, TTVEventFollow, TTVEventLive, SubscriptionTTVEventArbitraryPayload
@@ -28,9 +28,9 @@ async def startup_event():
     asyncio.create_task(bot.start(DISCORD_TOKEN))
 
 
-@app.get("/")
+@app.get("/", include_in_schema=False)
 async def root():
-    return {"message": "Hello World"}
+    return RedirectResponse(url='/docs')
 
 # test with twitch-cli
 # twitch-cli_1.1.6_Linux_x86_64/twitch event verify-subscription subscribe -F http://localhost:8000 -s TWITCH_APP_SECRET
