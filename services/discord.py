@@ -75,13 +75,13 @@ async def list_all_streamers(ctx):
 
     usernames, statuses = twitch.get_subscribed_usernames()
 
-    failed_msg = [
-        f'{status}\n' for status in statuses if status is not 'enabled']
+    failed_statuses = [
+        f'{username}: {status}' for username, status in statuses.items() if status != 'enabled']
 
     streamers_msg = '\n'.join(usernames)
-
+    failed_msg = '\n'.join(failed_statuses)
     msg = f'Streamers:\n{streamers_msg}' + \
-        (f'\n\nFailed subscriptions:\n{failed_msg}' if failed_msg else '')
+        (f'\n\nFailed subscriptions:\n{failed_msg}' if failed_statuses else '')
     await ctx.send(msg)
 
 
