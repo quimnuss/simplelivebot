@@ -80,7 +80,7 @@ async def list_all_streamers(ctx):
 
     streamers_msg = '\n'.join(usernames)
     failed_msg = '\n'.join(failed_statuses)
-    msg = f'**🍿Streamers:**\n{streamers_msg}' + \
+    msg = f'**🍿 Streamers:**\n\n{streamers_msg}' + \
         (f'\n\nFailed subscriptions (╯°□°）╯︵ ┻━┻ :\n{failed_msg}' if failed_statuses else '')
     await ctx.send(msg)
 
