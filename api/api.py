@@ -28,6 +28,11 @@ async def startup_event():
     asyncio.create_task(bot.start(DISCORD_TOKEN))
 
 
+@app.on_event("shutdown")
+async def shutdown_event():
+    await notify("shutting down")
+
+
 @app.get("/", include_in_schema=False)
 async def root():
     return RedirectResponse(url='/docs')
@@ -71,10 +76,12 @@ async def twitch_callback(request: Request, twitch_eventsub_message_type: Union[
         if esubwevent.subscription.type == 'channel.follow':
             follow_event = TTVEventFollow(**esubwevent.event)
             msg = f'https://www.twitch.tv/{follow_event.user_name} ha començat a seguir https://www.twitch.tv/{follow_event.broadcaster_user_name}!'
+            logging.info(msg)
             await notify(msg)
         elif esubwevent.subscription.type == 'stream.online':
             live_event = TTVEventLive(**esubwevent.event)
             msg = f'https://www.twitch.tv/{live_event.broadcaster_user_name} comença el directe!'
+            logging.info(msg)
             await notify(msg)
 
     return Response(status_code=status.HTTP_204_NO_CONTENT)
