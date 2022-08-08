@@ -80,7 +80,12 @@ class Twitch:
         else:
             usernames = []
 
-        return usernames
+        statuses = {
+            username: subscription.status
+            for username, subscription in zip(usernames, esublist.data)
+        } if usernames else {}
+
+        return usernames, statuses
 
     def delete_event_subscription(self, esub_id):
 

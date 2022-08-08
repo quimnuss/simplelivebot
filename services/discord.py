@@ -73,11 +73,15 @@ async def list_all_streamers(ctx):
     twitch = Twitch(app_id=APP_ID, app_secret=APP_SECRET,
                     callback_url=TWITCH_CALLBACK_URL)
 
-    usernames = twitch.get_subscribed_usernames()
+    usernames, statuses = twitch.get_subscribed_usernames()
+
+    failed_msg = [
+        f'{status}\n' for status in statuses if status is not 'enabled']
 
     streamers_msg = '\n'.join(usernames)
 
-    msg = f'Streamers:\n{streamers_msg}'
+    msg = f'Streamers:\n{streamers_msg}' + \
+        (f'\n\nFailed subscriptions:\n{failed_msg}' if failed_msg else '')
     await ctx.send(msg)
 
 
@@ -90,9 +94,9 @@ async def add_streamers(ctx: commands.Context, twitch_username: str):
     twitch = Twitch(app_id=APP_ID, app_secret=APP_SECRET,
                     callback_url=TWITCH_CALLBACK_URL)
 
-    usernames = twitch.get_subscribed_usernames()
+    usernames, statuses = twitch.get_subscribed_usernames()
 
-    if twitch_username in usernames:
+    if twitch_username in usernames and statuses.get(twitch_username, None) == 'enabled':
         msg = f'{twitch_username} already has a subscription. Skipping!'
     else:
 
