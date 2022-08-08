@@ -80,7 +80,7 @@ async def twitch_callback(request: Request, twitch_eventsub_message_type: Union[
             await notify(msg)
         elif esubwevent.subscription.type == 'stream.online':
             live_event = TTVEventLive(**esubwevent.event)
-            msg = f'https://www.twitch.tv/{live_event.broadcaster_user_name} comença el directe!'
+            msg = f':live: https://www.twitch.tv/{live_event.broadcaster_user_name} comença el directe! :live:'
             logging.info(msg)
             await notify(msg)
 

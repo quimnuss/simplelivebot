@@ -142,6 +142,13 @@ async def clear(ctx):
     await ctx.send(msg)
 
 
+@bot.command(name='live', help='lists the streamers with notifies')
+@in_bot_channel
+async def list_all_streamers(ctx, twitch_username: str):
+    msg = f':live: https://www.twitch.tv/{twitch_username} comença el directe! 📣:live:'
+    await ctx.send(msg)
+
+
 @bot.command(name='99', help='Responds with a random quote from Brooklyn 99')
 @in_bot_channel
 async def nine_nine(ctx):
