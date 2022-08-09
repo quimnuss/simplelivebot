@@ -113,6 +113,36 @@ async def add_streamers(ctx: commands.Context, twitch_username: str):
     await ctx.send(msg)
 
 
+@bot.command(name='addstreamers', help='add a streamer for live notifies. e.g. !addstreamer clicli')
+# @commands.has_role("Moderadors")
+@commands.has_permissions(administrator=True)
+@in_bot_channel
+@in_our_servers
+async def add_streamers(ctx: commands.Context, *args):
+    twitch_usernames: List[str] = list(args)
+    twitch = Twitch(app_id=APP_ID, app_secret=APP_SECRET,
+                    callback_url=TWITCH_CALLBACK_URL)
+
+    usernames, statuses = twitch.get_subscribed_usernames()
+
+    for twitch_username in twitch_usernames:
+        if twitch_username in usernames and statuses.get(twitch_username, None) == 'enabled':
+            msg = f'{twitch_username} already has a subscription. Skipping!'
+        else:
+
+            try:
+                result = twitch.subscribe(twitch_username=twitch_username)
+                msg = f'Subscribed to https://twitch.tv/{twitch_username} live notifications'
+                logging.info(msg)
+                logging.info(f'Result: {result}')
+            except Exception as e:
+                logging.exception(e)
+                msg = f"Cancelling subscription since channel_id for {twitch_username} wasn't found. Exception: {e}"
+                logging.error(msg)
+
+        # TODO fire and forget and gather the tasks at the end
+        await ctx.send(msg)
+
 @bot.command(name='removestreamer', help='remove a streamer for live notifies. e.g. !removestreamer clicli')
 # @commands.has_role("Moderadors")
 @commands.has_permissions(administrator=True)

@@ -44,6 +44,10 @@ class Twitch:
 
         response.raise_for_status()
 
+        if not response.json()['data']:
+            raise Exception(
+                f"Streamer {username} not found.")
+
         # TODO validate instead of assuming?
         channel_id = response.json()['data'][0]['id']
         return channel_id

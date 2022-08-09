@@ -12,3 +12,7 @@ def verify_message(id, timestamp, signature, body):
         hmac.new(APP_SECRET.encode(), message, digestmod='sha256').hexdigest()
 
     return hmac.compare_digest(hmac_signature, signature)
+
+
+def usernames_to_urls(usernames: str):
+    return [f'https://twitch.tv/{username}' for username in usernames.split(' ') if username]
