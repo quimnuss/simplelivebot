@@ -75,6 +75,8 @@ async def list_all_streamers(ctx):
 
     usernames, statuses = twitch.get_subscribed_usernames()
 
+    logging.info(f'usernames: {usernames} statuses: {statuses}')
+
     failed_statuses = [
         f'{username}: {status}' for username, status in statuses.items() if status != 'enabled']
 
