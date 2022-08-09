@@ -99,7 +99,7 @@ async def add_streamers(ctx: commands.Context, twitch_username: str):
     usernames, statuses = twitch.get_subscribed_usernames()
 
     if twitch_username in usernames and statuses.get(twitch_username, None) == 'enabled':
-        msg = f'{twitch_username} already has a subscription. Skipping!'
+        msg = f'{twitch_username} already has a subscription {statuses.get(twitch_username, None)}. Skipping!'
     else:
 
         try:
