@@ -9,7 +9,7 @@ from .schemas import (
     Subscription, TtvChallenge, TTVEventFollow, TTVEventLive, SubscriptionTTVEventArbitraryPayload
 )
 
-from services.discord import bot, notify
+from services.discord import bot, notify, notify_control
 
 from config.config import DISCORD_TOKEN
 
@@ -76,12 +76,14 @@ async def twitch_callback(request: Request, twitch_eventsub_message_type: Union[
         if esubwevent.subscription.type == 'channel.follow':
             follow_event = TTVEventFollow(**esubwevent.event)
             msg = f'https://www.twitch.tv/{follow_event.user_name} ha començat a seguir https://www.twitch.tv/{follow_event.broadcaster_user_name}!'
-            logging.info(msg)
-            await notify(msg)
         elif esubwevent.subscription.type == 'stream.online':
             live_event = TTVEventLive(**esubwevent.event)
-            msg = f':live: https://www.twitch.tv/{live_event.broadcaster_user_name} comença el directe! :live:'
-            logging.info(msg)
-            await notify(msg)
+            msg = f'📣 https://www.twitch.tv/{live_event.broadcaster_user_name} comença el directe! 📣'
+        else:
+            logging.error(
+                f'Unknown subscription type {esubwevent.subscription.type}')
+            return
+        logging.info(msg)
+        await notify_control(msg)
 
     return Response(status_code=status.HTTP_204_NO_CONTENT)

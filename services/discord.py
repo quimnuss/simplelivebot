@@ -5,7 +5,7 @@ from typing import List
 from urllib import request
 import discord
 from discord.ext import commands
-from config.config import APP_ID, APP_SECRET, TWITCH_CALLBACK_URL
+from config.config import *
 
 from services.twitch import Twitch
 
@@ -14,6 +14,7 @@ from main import unsubscribe_all
 role_name = 'streamer'
 bot_channels = ['bot-control']
 bot_channel_ids = []
+live_channel_ids = []
 
 servers = ['Gaming.cat', 'The Chuckle']
 
@@ -51,10 +52,33 @@ def in_our_servers(func):
 async def on_ready():
     print(f'{bot.user.name} has connected to Discord!')
     for guild in bot.guilds:
-        channel: discord.TextChannel = discord.utils.get(
-            guild.channels, name=bot_channels[0])
-        bot_channel_ids.append(channel.id)
-        await channel.send("I'm live!")
+
+        if CONTROL_CHANNEL_ID:
+            control_channel: discord.TextChannel = discord.utils.get(
+                guild.text_channels, id=CONTROL_CHANNEL_ID)
+
+        if not control_channel and CONTROL_CHANNEL_NAME:
+            control_channel: discord.TextChannel = discord.utils.get(
+                guild.text_channels, name=CONTROL_CHANNEL_NAME)
+
+        if not control_channel:
+            control_channel = guild.text_channels[0]
+            logging.error(
+                f"No control channel id specified or found. Selecting {control_channel.name}")
+
+        bot_channel_ids.append(control_channel.id)
+
+        if LIVE_CHANNEL_ID:
+            live_channel_id: discord.TextChannel = discord.utils.get(
+                guild.text_channels, id=LIVE_CHANNEL_ID)
+        elif LIVE_CHANNEL_NAME and not live_channel_id:
+            live_channel_id: discord.TextChannel = discord.utils.get(
+                guild.text_channels, name=LIVE_CHANNEL_NAME)
+        else:
+            live_channel_id = live_channel_id.id
+
+        live_channel_ids.append(live_channel_id)
+        await control_channel.send("I'm live!")
 
 
 @bot.command(name='kill', help='kills the bot')
@@ -145,6 +169,7 @@ async def add_streamers(ctx: commands.Context, *args):
         # TODO fire and forget and gather the tasks at the end
         await ctx.send(msg)
 
+
 @bot.command(name='removestreamer', help='remove a streamer for live notifies. e.g. !removestreamer clicli')
 # @commands.has_role("Moderadors")
 @commands.has_permissions(administrator=True)
@@ -203,6 +228,12 @@ async def nine_nine(ctx):
 
 
 async def notify(msg):
+    for channel_id in live_channel_ids:
+        channel = bot.get_channel(channel_id)
+        await channel.send(msg)
+
+
+async def notify_control(msg):
     for channel_id in bot_channel_ids:
         channel = bot.get_channel(channel_id)
         await channel.send(msg)
