@@ -12,9 +12,10 @@ from services.twitch import Twitch
 from main import unsubscribe_all
 
 role_name = 'streamer'
-bot_channels = ['bot-control']
-bot_channel_ids = []
-live_channel_ids = []
+control_channels_ids = []
+live_channels_ids = []
+
+control_channels_names = []
 
 servers = ['Gaming.cat', 'The Chuckle']
 
@@ -23,10 +24,10 @@ intents.members = True
 bot = commands.Bot(command_prefix='!', intents=intents)
 
 
-def in_bot_channel(func):
+def in_control_channel(func):
     async def inner(ctx, *args, **kwargs):
-        if ctx.channel.name not in bot_channels:
-            msg = f"Wrong channel for commands. Got {ctx.channel.name}, expecting {bot_channels}"
+        if ctx.channel.id not in control_channels_ids:
+            msg = f"Wrong channel for commands. Got {ctx.channel.name}, expecting {control_channels_names}"
             logging.warning(msg)
             await ctx.send(msg)
             return
@@ -66,24 +67,30 @@ async def on_ready():
             logging.error(
                 f"No control channel id specified or found. Selecting {control_channel.name}")
 
-        bot_channel_ids.append(control_channel.id)
+        control_channels_ids.append(control_channel.id)
+        control_channels_names.append(control_channel.name)
 
         if LIVE_CHANNEL_ID:
-            live_channel_id: discord.TextChannel = discord.utils.get(
+            live_channel: discord.TextChannel = discord.utils.get(
                 guild.text_channels, id=LIVE_CHANNEL_ID)
-        elif LIVE_CHANNEL_NAME and not live_channel_id:
-            live_channel_id: discord.TextChannel = discord.utils.get(
-                guild.text_channels, name=LIVE_CHANNEL_NAME)
-        else:
-            live_channel_id = live_channel_id.id
 
-        live_channel_ids.append(live_channel_id)
-        await control_channel.send("I'm live!")
+        if not live_channel and LIVE_CHANNEL_NAME:
+            live_channel: discord.TextChannel = discord.utils.get(
+                guild.text_channels, name=LIVE_CHANNEL_NAME)
+
+        if not live_channel:
+            live_channel = control_channel
+            logging.error(
+                f"No live channel id specified or found. Selecting {live_channel.name}")
+
+        live_channels_ids.append(live_channel.id)
+        await notify_control("I'm live!")
+        # await notify("I'm live and I'll notify here!")
 
 
 @bot.command(name='kill', help='kills the bot')
 @commands.has_permissions(administrator=True)
-@in_bot_channel
+@in_control_channel
 @in_our_servers
 async def quit(ctx):
     await ctx.send("Shutting down the bot")
@@ -91,7 +98,7 @@ async def quit(ctx):
 
 
 @bot.command(name='streamers', help='lists the streamers with notifies')
-@in_bot_channel
+@in_control_channel
 async def list_all_streamers(ctx):
 
     twitch = Twitch(app_id=APP_ID, app_secret=APP_SECRET,
@@ -114,7 +121,7 @@ async def list_all_streamers(ctx):
 @bot.command(name='addstreamer', help='add a streamer for live notifies. e.g. !addstreamer clicli')
 # @commands.has_role("Moderadors")
 @commands.has_permissions(administrator=True)
-@in_bot_channel
+@in_control_channel
 @in_our_servers
 async def add_streamers(ctx: commands.Context, twitch_username: str):
     twitch = Twitch(app_id=APP_ID, app_secret=APP_SECRET,
@@ -142,7 +149,7 @@ async def add_streamers(ctx: commands.Context, twitch_username: str):
 @bot.command(name='addstreamers', help='add a streamer for live notifies. e.g. !addstreamer clicli')
 # @commands.has_role("Moderadors")
 @commands.has_permissions(administrator=True)
-@in_bot_channel
+@in_control_channel
 @in_our_servers
 async def add_streamers(ctx: commands.Context, *args):
     twitch_usernames: List[str] = list(args)
@@ -173,7 +180,7 @@ async def add_streamers(ctx: commands.Context, *args):
 @bot.command(name='removestreamer', help='remove a streamer for live notifies. e.g. !removestreamer clicli')
 # @commands.has_role("Moderadors")
 @commands.has_permissions(administrator=True)
-@in_bot_channel
+@in_control_channel
 @in_our_servers
 async def remove_streamer(ctx: commands.Context, twitch_username: str):
 
@@ -192,7 +199,7 @@ async def remove_streamer(ctx: commands.Context, twitch_username: str):
 @bot.command(name='clear', help='clear streamer subscriptions. e.g. !clear')
 # @commands.has_role("Moderadors")
 @commands.has_permissions(administrator=True)
-@in_bot_channel
+@in_control_channel
 @in_our_servers
 async def clear(ctx):
 
@@ -204,14 +211,14 @@ async def clear(ctx):
 
 
 @bot.command(name='live', help='lists the streamers with notifies')
-@in_bot_channel
+@in_control_channel
 async def list_all_streamers(ctx, twitch_username: str):
     msg = f'📣 https://www.twitch.tv/{twitch_username} comença el **directe!** 📣'
     await ctx.send(msg)
 
 
 @bot.command(name='99', help='Responds with a random quote from Brooklyn 99')
-@in_bot_channel
+@in_control_channel
 async def nine_nine(ctx):
 
     brooklyn_99_quotes = [
@@ -228,12 +235,14 @@ async def nine_nine(ctx):
 
 
 async def notify(msg):
-    for channel_id in live_channel_ids:
+    logging.info(live_channels_ids)
+    for channel_id in live_channels_ids:
         channel = bot.get_channel(channel_id)
         await channel.send(msg)
 
 
 async def notify_control(msg):
-    for channel_id in bot_channel_ids:
+    logging.info(control_channels_ids)
+    for channel_id in control_channels_ids:
         channel = bot.get_channel(channel_id)
         await channel.send(msg)

@@ -30,7 +30,7 @@ async def startup_event():
 
 @app.on_event("shutdown")
 async def shutdown_event():
-    await notify("shutting down")
+    await notify_control("shutting down")
 
 
 @app.get("/", include_in_schema=False)
