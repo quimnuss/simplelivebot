@@ -56,7 +56,7 @@ async def on_ready():
 
         if CONTROL_CHANNEL_ID:
             control_channel: discord.TextChannel = discord.utils.get(
-                guild.text_channels, id=CONTROL_CHANNEL_ID)
+                guild.text_channels, id=int(CONTROL_CHANNEL_ID))
 
         if not control_channel and CONTROL_CHANNEL_NAME:
             control_channel: discord.TextChannel = discord.utils.get(
@@ -72,7 +72,7 @@ async def on_ready():
 
         if LIVE_CHANNEL_ID:
             live_channel: discord.TextChannel = discord.utils.get(
-                guild.text_channels, id=LIVE_CHANNEL_ID)
+                guild.text_channels, id=int(LIVE_CHANNEL_ID))
 
         if not live_channel and LIVE_CHANNEL_NAME:
             live_channel: discord.TextChannel = discord.utils.get(
