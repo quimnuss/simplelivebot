@@ -81,7 +81,7 @@ async def on_ready():
         if not live_channel:
             live_channel = control_channel
             logging.error(
-                f"No live channel id specified or found. Selecting {live_channel.name}")
+                f"No live channel id specified or found (id, name) ({LIVE_CHANNEL_ID}, {LIVE_CHANNEL_NAME}). Selecting {live_channel.name}")
 
         live_channels_ids.append(live_channel.id)
         await notify_control("I'm live!")
