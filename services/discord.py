@@ -123,7 +123,12 @@ async def list_all_streamers(ctx):
 @commands.has_permissions(administrator=True)
 @in_control_channel
 @in_our_servers
-async def add_streamers(ctx: commands.Context, twitch_username: str):
+async def add_streamer(ctx: commands.Context, twitch_username: str):
+
+    if not twitch_username:
+        await ctx.send(f"username cannot be empty {twitch_username}")
+        return
+
     twitch = Twitch(app_id=APP_ID, app_secret=APP_SECRET,
                     callback_url=TWITCH_CALLBACK_URL)
 
@@ -134,7 +139,7 @@ async def add_streamers(ctx: commands.Context, twitch_username: str):
     else:
 
         try:
-            result = twitch.subscribe(twitch_username=twitch_username)
+            result = twitch.subscribe(twitch_username=twitch_username.lower())
             msg = f'Subscribed to https://twitch.tv/{twitch_username} live notifications'
             logging.info(msg)
             logging.info(f'Result: {result}')
@@ -146,7 +151,7 @@ async def add_streamers(ctx: commands.Context, twitch_username: str):
     await ctx.send(msg)
 
 
-@bot.command(name='addstreamers', help='add a streamer for live notifies. e.g. !addstreamer clicli')
+@bot.command(name='addstreamers', help='add several streamers for live notifies. e.g. !addstreamer clicli gaming_catala')
 # @commands.has_role("Moderadors")
 @commands.has_permissions(administrator=True)
 @in_control_channel
@@ -184,10 +189,14 @@ async def add_streamers(ctx: commands.Context, *args):
 @in_our_servers
 async def remove_streamer(ctx: commands.Context, twitch_username: str):
 
+    if not twitch_username:
+        await ctx.send(f"username cannot be empty {twitch_username}")
+        return
+
     twitch = Twitch(app_id=APP_ID, app_secret=APP_SECRET,
                     callback_url=TWITCH_CALLBACK_URL)
 
-    response = twitch.unsubscribe(twitch_username=twitch_username)
+    response = twitch.unsubscribe(twitch_username=twitch_username.lower())
     if response.ok:
         msg = f'Removed https://www.twitch.tv/{twitch_username} from subscriptions'
     else:
