@@ -232,14 +232,12 @@ async def list_all_streamers(ctx, twitch_username: str):
     await ctx.send(msg)
 
 
-@bot.command(name='updatepresence', help='updates the state to a specific channel')
+@bot.command(name='presence', help='sets the state to a specific channel')
 @in_control_channel
-async def update_presence(ctx, twitch_username: str):
+async def set_presence(ctx, twitch_username: str):
     update_presence(twitch_username)
     msg = f'📣 Vaig a mirar https://www.twitch.tv/{twitch_username} en **directe!** 📣'
     await ctx.send(msg)
-
-
 
 
 @bot.command(name='99', help='Responds with a random quote from Brooklyn 99')
