@@ -9,7 +9,7 @@ from .schemas import (
     Subscription, TtvChallenge, TTVEventFollow, TTVEventLive, SubscriptionTTVEventArbitraryPayload
 )
 
-from services.discord import bot, notify, notify_control
+from services.discord import bot, notify, notify_control, shutdown_presence, update_presence
 
 from config.config import DISCORD_TOKEN
 
@@ -30,6 +30,7 @@ async def startup_event():
 
 @app.on_event("shutdown")
 async def shutdown_event():
+    await shutdown_presence()
     await notify_control("shutting down")
 
 
@@ -79,6 +80,7 @@ async def twitch_callback(request: Request, twitch_eventsub_message_type: Union[
         elif esubwevent.subscription.type == 'stream.online':
             live_event = TTVEventLive(**esubwevent.event)
             msg = f'📣 https://www.twitch.tv/{live_event.broadcaster_user_name} comença el directe! 📣'
+            update_presence(live_event.broadcaster_user_name)
         else:
             logging.error(
                 f'Unknown subscription type {esubwevent.subscription.type}')

@@ -52,6 +52,12 @@ def in_our_servers(func):
 @bot.event
 async def on_ready():
     logging.info(f'{bot.user.name} has connected to Discord!')
+    activity = discord.Activity(
+        name="streamers en català",
+        type=discord.ActivityType.watching,
+        state="Streamers en Català"
+    )
+    await bot.change_presence(activity=activity)
     for guild in bot.guilds:
 
         if CONTROL_CHANNEL_ID:
@@ -255,3 +261,17 @@ async def notify_control(msg):
     for channel_id in control_channels_ids:
         channel = bot.get_channel(channel_id)
         await channel.send(msg)
+
+
+async def update_presence(username):
+    activity = discord.Activity(
+        name=f"{username}",
+        type=discord.ActivityType.watching,
+        state=f"{username} en Català",
+        url=f"https://twitch.tv/{username}"
+    )
+    await bot.change_presence(activity=activity)
+
+
+async def shutdown_presence():
+    await bot.change_presence(activity=discord.Activity(name="Dormint"))
