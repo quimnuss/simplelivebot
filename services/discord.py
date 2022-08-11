@@ -235,7 +235,7 @@ async def list_all_streamers(ctx, twitch_username: str):
 @bot.command(name='presence', help='sets the state to a specific channel')
 @in_control_channel
 async def set_presence(ctx, twitch_username: str):
-    update_presence(twitch_username)
+    await update_presence(twitch_username)
     msg = f'📣 Vaig a mirar https://www.twitch.tv/{twitch_username} en **directe!** 📣'
     await ctx.send(msg)
 

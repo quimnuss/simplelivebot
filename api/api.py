@@ -80,7 +80,7 @@ async def twitch_callback(request: Request, twitch_eventsub_message_type: Union[
         elif esubwevent.subscription.type == 'stream.online':
             live_event = TTVEventLive(**esubwevent.event)
             msg = f'📣 https://www.twitch.tv/{live_event.broadcaster_user_name} comença el directe! 📣'
-            update_presence(live_event.broadcaster_user_name)
+            await update_presence(live_event.broadcaster_user_name)
         else:
             logging.error(
                 f'Unknown subscription type {esubwevent.subscription.type}')
