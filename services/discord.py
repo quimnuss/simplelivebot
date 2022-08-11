@@ -51,7 +51,7 @@ def in_our_servers(func):
 
 @bot.event
 async def on_ready():
-    print(f'{bot.user.name} has connected to Discord!')
+    logging.info(f'{bot.user.name} has connected to Discord!')
     for guild in bot.guilds:
 
         if CONTROL_CHANNEL_ID:

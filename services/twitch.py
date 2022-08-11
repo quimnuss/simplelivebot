@@ -133,15 +133,14 @@ class Twitch:
         try:
             response = self.event_subscribe(
                 esubtype=esubtype, channel_id=channel_id)
-            print(f"Status {response.status_code}. Body: {response.json()}")
+            logging.info(
+                f"Status {response.status_code}. Body: {response.json()}")
         except requests.HTTPError as e:
-            print(f"Error request: {e.request}")
-            curl_request = curlify.to_curl(e.request)
-            print(f"Curl version: {curl_request}")
+            logging.error(f"Error request: {e.request}")
+            raise e
         except Exception as e:
-            print(
+            logging.error(
                 f"Error subscribing to {esubtype} response code: {e}")
-
             raise e
         return response.json()
 
