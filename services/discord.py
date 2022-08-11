@@ -266,7 +266,7 @@ async def notify_control(msg):
 async def update_presence(username):
     activity = discord.Activity(
         name=f"{username}",
-        type=discord.ActivityType.watching,
+        type=discord.ActivityType.streaming,
         state=f"{username} en Català",
         url=f"https://twitch.tv/{username}"
     )
