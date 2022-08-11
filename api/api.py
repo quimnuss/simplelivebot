@@ -84,6 +84,6 @@ async def twitch_callback(request: Request, twitch_eventsub_message_type: Union[
                 f'Unknown subscription type {esubwevent.subscription.type}')
             return
         logging.info(msg)
-        await notify_control(msg)
+        await notify(msg)
 
     return Response(status_code=status.HTTP_204_NO_CONTENT)
