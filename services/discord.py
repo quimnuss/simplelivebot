@@ -103,6 +103,19 @@ async def quit(ctx):
     return await bot.logout()  # this just shuts down the bot.
 
 
+@bot.command(name='count', help='count the streamers with notifies')
+@in_control_channel
+async def count_streamers(ctx):
+
+    twitch = Twitch(app_id=APP_ID, app_secret=APP_SECRET,
+                    callback_url=TWITCH_CALLBACK_URL)
+
+    usernames, _ = twitch.get_subscribed_usernames()
+
+    msg = f'**🍿 Streamers ({len(usernames)})**)'
+    await ctx.send(msg)
+
+
 @bot.command(name='streamers', help='lists the streamers with notifies')
 @in_control_channel
 async def list_all_streamers(ctx):
@@ -119,7 +132,7 @@ async def list_all_streamers(ctx):
 
     streamers_msg = '\n'.join(usernames)
     failed_msg = '\n'.join(failed_statuses)
-    msg = f'**🍿 Streamers:**\n\n{streamers_msg}' + \
+    msg = f'**🍿 Streamers ({len(usernames)}):**\n\n{streamers_msg}' + \
         (f'\n\nFailed subscriptions (╯°□°）╯︵ ┻━┻ :\n{failed_msg}' if failed_statuses else '')
     await ctx.send(msg)
 
@@ -157,7 +170,7 @@ async def add_streamer(ctx: commands.Context, twitch_username: str):
     await ctx.send(msg)
 
 
-@bot.command(name='addstreamers', help='add several streamers for live notifies. e.g. !addstreamer clicli gaming_catala')
+@bot.command(name='addstreamers', help='add several streamers for live notifies. e.g. !addstreamers clicli gaming_catala')
 # @commands.has_role("Moderadors")
 @commands.has_permissions(administrator=True)
 @in_control_channel
