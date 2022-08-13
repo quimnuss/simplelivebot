@@ -127,7 +127,7 @@ async def list_all_streamers(ctx):
 
     logging.info(f'usernames: {usernames} statuses: {statuses}')
 
-    usernames = usernames.sort()
+    usernames.sort()
 
     failed_statuses = [
         f'{username}: {status}' for username, status in statuses.items() if status != 'enabled']
