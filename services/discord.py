@@ -112,7 +112,7 @@ async def count_streamers(ctx):
 
     usernames, _ = twitch.get_subscribed_usernames()
 
-    msg = f'**🍿 Streamers ({len(usernames)})**)'
+    msg = f'**🍿 {len(usernames)} Streamers**'
     await ctx.send(msg)
 
 
@@ -126,6 +126,8 @@ async def list_all_streamers(ctx):
     usernames, statuses = twitch.get_subscribed_usernames()
 
     logging.info(f'usernames: {usernames} statuses: {statuses}')
+
+    usernames = usernames.sort()
 
     failed_statuses = [
         f'{username}: {status}' for username, status in statuses.items() if status != 'enabled']
