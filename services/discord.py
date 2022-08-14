@@ -1,3 +1,4 @@
+from http.client import HTTPException
 import random
 import asyncio
 import logging
@@ -91,6 +92,8 @@ async def on_ready():
 
         live_channels_ids.append(live_channel.id)
         await notify_control("I'm live!")
+
+
         # await notify("I'm live and I'll notify here!")
 
 
@@ -276,14 +279,21 @@ async def notify(msg):
     logging.info(live_channels_ids)
     for channel_id in live_channels_ids:
         channel = bot.get_channel(channel_id)
-        await channel.send(msg)
+        m: discord.Message = await channel.send(msg)
+        logging.debug(m)
 
 
 async def notify_control(msg):
-    logging.info(control_channels_ids)
-    for channel_id in control_channels_ids:
-        channel = bot.get_channel(channel_id)
-        await channel.send(msg)
+    try:
+        logging.info(control_channels_ids)
+        for channel_id in control_channels_ids:
+            channel = bot.get_channel(channel_id)
+            m: discord.Message = await channel.send(msg)
+            logging.debug(m)
+    except HTTPException as e:
+        logging.error(e.response)
+        logging.error(e.text)
+        raise e
 
 
 async def update_presence(username):
