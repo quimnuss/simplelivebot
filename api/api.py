@@ -33,10 +33,10 @@ async def shutdown_event():
     await shutdown_presence()
     await notify_control("shutting down")
 
-
-@app.get("/", include_in_schema=False)
-async def root():
-    return RedirectResponse(url='/docs')
+# remove redirect to reduce spammers
+# @app.get("/", include_in_schema=False)
+# async def root():
+#     return RedirectResponse(url='/docs')
 
 # test with twitch-cli
 # twitch-cli_1.1.6_Linux_x86_64/twitch event verify-subscription subscribe -F http://localhost:8000 -s TWITCH_APP_SECRET
